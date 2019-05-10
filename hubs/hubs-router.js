@@ -4,7 +4,7 @@ const Hubs = require('./hubs-model.js');
 
 const router = express.Router();
 
-router.get('/api/hubs', async (req, res) => {
+router.get('/', async (req, res) => {
     try {
       const hubs = await Hubs.find(req.query);
       res.status(200).json(hubs);
@@ -17,7 +17,7 @@ router.get('/api/hubs', async (req, res) => {
     }
   });
   
-  router.get('/api/hubs/:id', async (req, res) => {
+  router.get('/:id', async (req, res) => {
     try {
       const hub = await Hubs.findById(req.params.id);
   
@@ -35,7 +35,7 @@ router.get('/api/hubs', async (req, res) => {
     }
   });
   
-  router.post('/api/hubs', async (req, res) => {
+  router.post('/', async (req, res) => {
     try {
       const hub = await Hubs.add(req.body);
       res.status(201).json(hub);
@@ -48,7 +48,7 @@ router.get('/api/hubs', async (req, res) => {
     }
   });
   
-  router.delete('/api/hubs/:id', async (req, res) => {
+  router.delete('/:id', async (req, res) => {
     try {
       const count = await Hubs.remove(req.params.id);
       if (count > 0) {
@@ -65,7 +65,7 @@ router.get('/api/hubs', async (req, res) => {
     }
   });
   
-  router.put('/api/hubs/:id', async (req, res) => {
+  router.put('/:id', async (req, res) => {
     try {
       const hub = await Hubs.update(req.params.id, req.body);
       if (hub) {
@@ -83,6 +83,55 @@ router.get('/api/hubs', async (req, res) => {
   });
   
   // add an endpoint that returns all the messages for a hub
+
+router.get('/:id/messages', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const messages = await
+        Hubs.findHubMessages(id);
+
+        if (messages.length) {
+            res.json(messages)
+        } else {
+            res.status(404).json({err: 'no messages for this hub'})
+        }
+
+    } catch(err) {
+        res.status(500).json({err})
+    }
+
+})
+
   // add an endpoint for adding new message to a hub
+
+
+//   router.post('/:id/messages', async (req, res) => {
+//       try{
+//           const newMessage = await Hubs.addMessage(req.body)
+
+//           if (req.body.id && req.body.message) {
+//               res.json(newMessage);
+//           } else {
+//               res.status(404).json({err: 'you need both an id and a message'})
+//           }
+//       } catch (err) {
+//           res.status(500).json({err})
+//       }
+//   })
+
+router.post('/:id/messages', async (req, res) => {
+    const messageInfo = {...req.body, hub_id: req.params.id};
+
+    try {
+        const newMessage = await Hubs.addMessage(messageInfo);
+        res.status(201).json(newMessage);
+    } catch (err) {
+        res.status(500).json({
+            message: "failed to save message",
+            err
+        })
+    }
+})
 
   module.exports = router;
